@@ -118,5 +118,8 @@ def play_wav(filepath, speed=1.0):
     stream.close()
     p.terminate()
     
+    #wavファイルをクローズしないと削除できない。
+    play_target_file.close()
+
     # 一時ファイルを削除
     os.remove(temp_file)
