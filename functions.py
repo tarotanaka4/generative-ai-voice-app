@@ -9,8 +9,25 @@ from time import sleep
 from scipy.io.wavfile import write
 from pathlib import Path
 import streamlit as st
+from audiorecorder import audiorecorder
 
 def record_audio(fs=48000, dir="audio/input", silence_threshold=2.5, min_duration=0.05, amplitude_threshold=0.01):
+    audio_directory = Path.cwd() / dir
+    audio_directory.mkdir(parents=True, exist_ok=True)
+    file_path = audio_directory / f"recorded_audio_input_{int(time.time())}.wav"
+
+    audio = audiorecorder("", "",show_visualizer=False)
+
+    if len(audio) > 0:
+        # To save audio to a file, use pydub export method:
+        audio.export(file_path, format="wav")
+    else:
+        print("stop")
+        st.stop()
+    return file_path
+
+
+def record_audioX(fs=48000, dir="audio/input", silence_threshold=2.5, min_duration=0.05, amplitude_threshold=0.01):
     audio_directory = Path.cwd() / dir
     audio_directory.mkdir(parents=True, exist_ok=True)
     file_path = audio_directory / f"recorded_audio_input_{int(time.time())}.wav"
