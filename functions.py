@@ -10,7 +10,7 @@ from scipy.io.wavfile import write
 from pathlib import Path
 import streamlit as st
 from audiorecorder import audiorecorder
-from playsound import playsound
+#from playsound import playsound
 
 def record_audio(fs=48000, dir="audio/input", silence_threshold=2.5, min_duration=0.05, amplitude_threshold=0.01):
     audio_directory = Path.cwd() / dir
