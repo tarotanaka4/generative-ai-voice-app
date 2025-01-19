@@ -184,6 +184,7 @@ if st.session_state.start_flg:
                     max_token_limit=500,
                     return_messages=True
                 )
+                print("1")
                 st.session_state.dictation_problem_chain = ConversationChain(
                     llm=llm,
                     prompt=prompt,
@@ -196,11 +197,13 @@ if st.session_state.start_flg:
                     voice="alloy",
                     input=st.session_state.problem
                 )
+                print("2")
                 # mp3形式の音声ファイルをwav形式に変換して保存
                 output_file_path = Path.cwd() / "audio/output" / f"recorded_audio_output_{int(time.time())}.wav"
                 func.save_to_wav(response.content, output_file_path)
+                print("3")
             # 音声ファイルの読み上げ
-            func.play_wav(str(output_file_path), speed=st.session_state.speed)
+            func.play_wav(str(output_file_path), speed=st.session_state.speed, stop=True)
 
         if not chat_message:
             st.session_state.chat_wait_flg = True
@@ -320,7 +323,8 @@ if st.session_state.start_flg:
 
             st.session_state.shadowing_state = True
             st.session_state.shadowing_problem = problem
-            st.rerun()
+#            st.rerun()
+            st.button("次へ")
         else:
             # 音声入力の受け取り
             print("before")
