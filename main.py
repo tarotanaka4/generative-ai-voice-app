@@ -1,5 +1,4 @@
 import os
-import sys
 import time
 from time import sleep
 from pathlib import Path
@@ -15,16 +14,10 @@ from openai import OpenAI
 from langchain_openai import ChatOpenAI
 from langchain.schema import SystemMessage
 import streamlit as st
-from streamlit.components.v1 import html
 from dotenv import load_dotenv
 
 load_dotenv()
-print("refreshーーーーーーーーー")
 st.markdown('## 生成AI英会話アプリ')
-# st.markdown("##### 「英会話開始」ボタンを押して、英会話を始めましょう。")
-
-# st.sidebar.title('Control panel')
-# st.sidebar.button('Reload button')
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -37,6 +30,8 @@ if "messages" not in st.session_state:
     st.session_state.dictation_button_flg = False
     st.session_state.dictation_count = 0
     st.session_state.chat_wait_flg = False
+    st.session_state.chat_count = 0
+    st.session_state.chat_input_file_path = ""
     st.session_state.shadowing_state = False
 
 
@@ -88,27 +83,9 @@ with st.chat_message("assistant", avatar="images/370377.jpg"):
     - 発話後、5秒間沈黙することで音声入力が完了します。
     - 「一時中断」ボタンを押すことで、英会話を一時中断できます。
     """)
-    # st.markdown("")
-    # st.markdown("##### 各モードの説明")
-    # st.markdown("###### 【日常英会話】")
-    # st.code("音声で生成AIロボットと自由に日常英会話を楽しめます。使っている英語の文法に誤りがあれば適宜指摘してくれるため、話しながら効率的に英語力をアップできます。", language=None, wrap_lines=True)
-    # st.markdown("###### 【シャドーイング】")
-    # st.code("英語の音声が流れるため、聞き終わったらそれを真似て発話してください。発話後、生成AIロボットによる評価が行われます。何度も練習しながら英語特有の音・リズムを体に染み込ませましょう。", language=None, wrap_lines=True)
-    # st.markdown("###### 【ディクテーション】")
-    # st.code("英語の音声が流れるため、聞き終わったら流れた音声を画面下部のチャット欄から入力してください。送信後、生成AIロボットによる評価が行われます。正しく各単語を聞き取れるようになるまで何度も練習しましょう。", language=None, wrap_lines=True)
-    # st.divider()
 
-# for message in st.session_state.messages:
-#     if message["role"] == "assistant":
-#         with st.chat_message(message["role"], avatar="images/370377.jpg"):
-#             st.markdown(message["content"])
-#     else:
-#         with st.chat_message(message["role"], avatar="images/23260507.jpg"):
-#             st.markdown(message["content"])
-print(st.session_state.mode)
 if st.session_state.mode == "シャドーイング":
     if st.session_state.shadowing_flg:
-        print("チャット生成" + str(len(st.session_state.messages)))
         for message in st.session_state.messages:
             if message["role"] == "assistant":
                 with st.chat_message(message["role"], avatar="images/370377.jpg"):
@@ -142,6 +119,8 @@ if st.session_state.end_flg:
     st.session_state.dictation_button_flg = False
     st.session_state.dictation_count = 0
     st.session_state.chat_wait_flg = False
+    st.session_state.chat_count = 0
+    st.session_state.chat_input_file_path = ""
     st.session_state.shadowing_state = False
 
 if st.session_state.chat_wait_flg:
@@ -178,7 +157,6 @@ if st.session_state.start_flg:
                     max_token_limit=500,
                     return_messages=True
                 )
-                print("1")
                 st.session_state.dictation_problem_chain = ConversationChain(
                     llm=llm,
                     prompt=prompt,
@@ -191,11 +169,9 @@ if st.session_state.start_flg:
                     voice="alloy",
                     input=st.session_state.problem
                 )
-                print("2")
                 # mp3形式の音声ファイルをwav形式に変換して保存
                 output_file_path = Path.cwd() / "audio/output" / f"recorded_audio_output_{int(time.time())}.wav"
                 func.save_to_wav(response.content, output_file_path)
-                print("3")
             # 音声ファイルの読み上げ
             func.play_wav(str(output_file_path), speed=st.session_state.speed, stop=True)
 
@@ -270,7 +246,6 @@ if st.session_state.start_flg:
             st.rerun()
 
     if st.session_state.mode == "シャドーイング":
-    # if st.session_state.mode == "シャドーイング" and (st.session_state.shadowing_continue_flg or st.session_state.shadowing_count == 0):
         system_template = """
         Generate 1 sentence that reflect natural English used in daily conversations, workplace, and social settings:
         - Casual conversational expressions
@@ -312,18 +287,14 @@ if st.session_state.start_flg:
                 output_file_path = Path.cwd() / "audio/output" / f"recorded_audio_output_{int(time.time())}.wav"
                 func.save_to_wav(response.content, output_file_path)
             # 音声ファイルの読み上げ
-            print("音声読み上げ")
             func.play_wav(str(output_file_path), speed=st.session_state.speed)
 
             st.session_state.shadowing_state = True
             st.session_state.shadowing_problem = problem
-#            st.rerun()
             st.button("問題が聞き取れたら次へ")
         else:
             # 音声入力の受け取り
-            print("before")
             speech_file_path = func.record_audio()
-            print("after")
             st.session_state.messages.append({"role": "assistant", "content": st.session_state.shadowing_problem})
 
             st.session_state.shadowing_state = False
@@ -331,7 +302,6 @@ if st.session_state.start_flg:
             with st.spinner('音声入力をテキストに変換中...'):
                 # 音声入力をテキストに変換
                 result = func.transcribe(speech_file_path, st.session_state.client)
-                print("音声入力をテキストに変換")
                 st.session_state.messages.append({"role": "user", "content": result.text})
                 with st.chat_message("assistant", avatar="images/370377.jpg"):
                     st.markdown(st.session_state.shadowing_problem)
@@ -386,58 +356,51 @@ if st.session_state.start_flg:
             
             st.session_state.shadowing_flg = True
             st.session_state.shadowing_count += 1
-            # st.rerun()
-            # st.session_state.shadowing_continue_flg = st.button("シャドーイング開始")
-            # print(st.session_state.shadowing_continue_flg)
             st.session_state.messages = []
             st.session_state.shadowing_continue_flg = True
             st.button("シャドーイングを継続")
-            # if :
-            #     st.session_state.shadowing_continue_flg = True
-            #     st.session_state.messages = []
-            #     print("シャドーイング開始ボタン")
-                # print(st.session_state.shadowing_continue_flg)
-    #            st.rerun()
-        # if st.button("準備はOK？"):
-        #     print("next")
     if st.session_state.mode == "日常英会話":
         # 音声入力の受け取り
-        print("before")
-        input_file_path = func.record_audio()
-        print("after")
+        if st.session_state.chat_count==0:
+            st.session_state.chat_input_file_path = func.record_audio()
+            st.session_state.chat_count=st.session_state.chat_count+1
+            st.rerun()
+        else:
+            st.session_state.chat_count=st.session_state.chat_count+1
+            for message in st.session_state.messages:
+                if message["role"] == "assistant":
+                    with st.chat_message(message["role"], avatar="images/370377.jpg"):
+                        st.markdown(message["content"])
+                else:
+                    with st.chat_message(message["role"], avatar="images/23260507.jpg"):
+                        st.markdown(message["content"])
 
-        for message in st.session_state.messages:
-            if message["role"] == "assistant":
-                with st.chat_message(message["role"], avatar="images/370377.jpg"):
-                    st.markdown(message["content"])
+            # 音声入力をテキストに変換
+            result = func.transcribe(st.session_state.chat_input_file_path, st.session_state.client)
+            st.session_state.messages.append({"role": "user", "content": result.text})
+            with st.chat_message("user", avatar="images/23260507.jpg"):
+                st.markdown(result.text)
+
+            result = st.session_state.chain.predict(input=result.text)
+            st.session_state.messages.append({"role": "assistant", "content": result})
+            with st.chat_message("assistant", avatar="images/370377.jpg"):
+                st.markdown(result)
+
+            # LLMからの回答を音声データに変換
+            response = st.session_state.client.audio.speech.create(
+                model="tts-1",
+                voice="alloy",
+                input=result
+            )
+
+            # mp3形式の音声ファイルをwav形式に変換して保存
+            output_file_path = Path.cwd() / "audio/output" / f"recorded_audio_output_{int(time.time())}.wav"
+            func.save_to_wav(response.content, output_file_path)
+
+            # 音声ファイルの読み上げ
+            func.play_wav(str(output_file_path), speed=st.session_state.speed)
+
+            if st.session_state.chat_count>1:
+                st.session_state.chat_input_file_path = func.record_audio()
             else:
-                with st.chat_message(message["role"], avatar="images/23260507.jpg"):
-                    st.markdown(message["content"])
-
-        # 音声入力をテキストに変換
-        result = func.transcribe(input_file_path, st.session_state.client)
-        st.session_state.messages.append({"role": "user", "content": result.text})
-        with st.chat_message("user", avatar="images/23260507.jpg"):
-            st.markdown(result.text)
-
-        result = st.session_state.chain.predict(input=result.text)
-        st.session_state.messages.append({"role": "assistant", "content": result})
-        with st.chat_message("assistant", avatar="images/370377.jpg"):
-            st.markdown(result)
-
-        # LLMからの回答を音声データに変換
-        response = st.session_state.client.audio.speech.create(
-            model="tts-1",
-            voice="alloy",
-            input=result
-        )
-
-        # mp3形式の音声ファイルをwav形式に変換して保存
-        output_file_path = Path.cwd() / "audio/output" / f"recorded_audio_output_{int(time.time())}.wav"
-        func.save_to_wav(response.content, output_file_path)
-
-        # 音声ファイルの読み上げ
-        func.play_wav(str(output_file_path), speed=st.session_state.speed)
-
-        # 英会話を続けるためにファイルを再実行
-#        st.rerun()
+                st.rerun()

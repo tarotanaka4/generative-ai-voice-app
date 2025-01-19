@@ -1,16 +1,11 @@
-import wave
 import os
-import pyaudio
 from pydub import AudioSegment
-import sounddevice as sd
-import numpy as np
 import time
 from time import sleep
 from scipy.io.wavfile import write
 from pathlib import Path
 import streamlit as st
 from audiorecorder import audiorecorder
-#from playsound import playsound
 
 def record_audio(fs=48000, dir="audio/input", silence_threshold=2.5, min_duration=0.05, amplitude_threshold=0.01):
     audio_directory = Path.cwd() / dir
@@ -23,7 +18,6 @@ def record_audio(fs=48000, dir="audio/input", silence_threshold=2.5, min_duratio
         # To save audio to a file, use pydub export method:
         audio.export(file_path, format="wav")
     else:
-        print("stop")
         st.stop()
     return file_path
 
@@ -69,7 +63,6 @@ def play_wav(filepath, speed=1.0, stop=False):
         file_path: 音声ファイルのパス
         speed: 再生速度（1.0が通常速度、0.5で半分の速さ、2.0で倍速など）
     """
-    print(filepath)
     # PyDubで音声ファイルを読み込む
     audio = AudioSegment.from_wav(filepath)
     
