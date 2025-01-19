@@ -33,7 +33,9 @@ if "messages" not in st.session_state:
     st.session_state.chat_count = 0
     st.session_state.chat_input_file_path = ""
     st.session_state.shadowing_state = False
-
+    st.session_state.mode = "日常英会話"
+    st.session_state.pre_mode = "日常英会話"
+    func.delete_wav_files()
 
     st.session_state.client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
 
@@ -72,6 +74,7 @@ with col2:
 with col3:
     st.session_state.speed = st.selectbox(label="再生速度", options=[2.0, 1.5, 1.2, 1.0, 0.8, 0.6], index=3, label_visibility="collapsed")
 with col4:
+    st.session_state.pre_mode = st.session_state.mode
     st.session_state.mode = st.selectbox(label="モード", options=["日常英会話", "シャドーイング", "ディクテーション"], label_visibility="collapsed")
 
 with st.chat_message("assistant", avatar="images/370377.jpg"):
@@ -108,7 +111,7 @@ if st.session_state.mode == "ディクテーション":
         st.session_state.dictation_button_flg = st.button("ディクテーション開始")
 
 
-if st.session_state.end_flg:
+if st.session_state.end_flg or (st.session_state.pre_mode != st.session_state.mode):
     st.info("英会話を一時中断します。")
     st.session_state.messages = []
     st.session_state.start_flg = False
@@ -359,7 +362,7 @@ if st.session_state.start_flg:
             st.session_state.shadowing_count += 1
             st.session_state.messages = []
             st.session_state.shadowing_continue_flg = True
-            st.button("シャドーイングを継続")
+            st.button("シャドーイングを開始")
     if st.session_state.mode == "日常英会話":
         # 音声入力の受け取り
         if st.session_state.chat_count==0:

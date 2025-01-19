@@ -6,7 +6,22 @@ from scipy.io.wavfile import write
 from pathlib import Path
 import streamlit as st
 from audiorecorder import audiorecorder
+import glob
 
+def delete_wav_files():
+    dirs=["audio/input","audio/output"]
+    for dir in dirs:
+        audio_directory = Path.cwd() / dir
+        # フォルダ内のすべての.wavファイルを取得
+        wav_files = glob.glob(os.path.join(audio_directory, '*.wav'))
+        
+        # それぞれのファイルを削除
+        for file in wav_files:
+            os.remove(file)
+            print(f"{file} を削除しました")
+    
+    print("すべての.wavファイルを削除しました")
+    
 def record_audio(fs=48000, dir="audio/input", silence_threshold=2.5, min_duration=0.05, amplitude_threshold=0.01):
     audio_directory = Path.cwd() / dir
     audio_directory.mkdir(parents=True, exist_ok=True)
