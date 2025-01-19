@@ -31,7 +31,7 @@ if "messages" not in st.session_state:
     st.session_state.start_flg = False
     st.session_state.end_flg = False
     st.session_state.shadowing_flg = False
-    st.session_state.shadowing_button_flg = False
+    st.session_state.shadowing_continue_flg = False
     st.session_state.shadowing_count = 0
     st.session_state.dictation_flg = False
     st.session_state.dictation_button_flg = False
@@ -62,8 +62,6 @@ if "messages" not in st.session_state:
         prompt=prompt,
         memory=memory
     )
-
-print(st.session_state.shadowing_button_flg)
 
 col1, col2, col3, col4 = st.columns([1, 1, 1, 2])
 with col1:
@@ -118,12 +116,7 @@ if st.session_state.mode == "シャドーイング":
             else:
                 with st.chat_message(message["role"], avatar="images/23260507.jpg"):
                     st.markdown(message["content"])
-        # print(st.session_state.shadowing_button_flg)
-        # if st.session_state.shadowing_button_flg:
-        #     st.session_state.shadowing_button_flg = False
-        #     st.rerun()
-        st.session_state.shadowing_button_flg = st.button("シャドーイング開始")
-        if not st.session_state.shadowing_button_flg and not st.session_state.shadowing_state:
+        if not st.session_state.shadowing_continue_flg and not st.session_state.shadowing_state:
             st.stop()
 if st.session_state.mode == "ディクテーション":
     if st.session_state.dictation_flg:
@@ -139,10 +132,11 @@ if st.session_state.mode == "ディクテーション":
 
 if st.session_state.end_flg:
     st.info("英会話を一時中断します。")
+    st.session_state.messages = []
     st.session_state.start_flg = False
     st.session_state.end_flg = False
     st.session_state.shadowing_flg = False
-    st.session_state.shadowing_button_flg = False
+    st.session_state.shadowing_continue_flg = False
     st.session_state.shadowing_count = 0
     st.session_state.dictation_flg = False
     st.session_state.dictation_button_flg = False
@@ -276,7 +270,7 @@ if st.session_state.start_flg:
             st.rerun()
 
     if st.session_state.mode == "シャドーイング":
-    # if st.session_state.mode == "シャドーイング" and (st.session_state.shadowing_button_flg or st.session_state.shadowing_count == 0):
+    # if st.session_state.mode == "シャドーイング" and (st.session_state.shadowing_continue_flg or st.session_state.shadowing_count == 0):
         system_template = """
         Generate 1 sentence that reflect natural English used in daily conversations, workplace, and social settings:
         - Casual conversational expressions
@@ -324,7 +318,7 @@ if st.session_state.start_flg:
             st.session_state.shadowing_state = True
             st.session_state.shadowing_problem = problem
 #            st.rerun()
-            st.button("次へ")
+            st.button("問題が聞き取れたら次へ")
         else:
             # 音声入力の受け取り
             print("before")
@@ -393,16 +387,16 @@ if st.session_state.start_flg:
             st.session_state.shadowing_flg = True
             st.session_state.shadowing_count += 1
             # st.rerun()
-            # st.session_state.shadowing_button_flg = st.button("シャドーイング開始")
-            # print(st.session_state.shadowing_button_flg)
+            # st.session_state.shadowing_continue_flg = st.button("シャドーイング開始")
+            # print(st.session_state.shadowing_continue_flg)
             st.session_state.messages = []
-            st.session_state.shadowing_button_flg = True
+            st.session_state.shadowing_continue_flg = True
             st.button("シャドーイングを継続")
             # if :
-            #     st.session_state.shadowing_button_flg = True
+            #     st.session_state.shadowing_continue_flg = True
             #     st.session_state.messages = []
             #     print("シャドーイング開始ボタン")
-                # print(st.session_state.shadowing_button_flg)
+                # print(st.session_state.shadowing_continue_flg)
     #            st.rerun()
         # if st.button("準備はOK？"):
         #     print("next")
