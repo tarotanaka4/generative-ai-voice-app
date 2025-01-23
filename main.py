@@ -365,46 +365,38 @@ if st.session_state.start_flg:
             st.button("シャドーイングを開始")
     if st.session_state.mode == "日常英会話":
         # 音声入力の受け取り
-        if st.session_state.chat_count==0:
-            st.session_state.chat_input_file_path = func.record_audio()
-            st.session_state.chat_count=st.session_state.chat_count+1
-            st.rerun()
-        else:
-            st.session_state.chat_count=st.session_state.chat_count+1
-            for message in st.session_state.messages:
-                if message["role"] == "assistant":
-                    with st.chat_message(message["role"], avatar="images/370377.jpg"):
-                        st.markdown(message["content"])
-                else:
-                    with st.chat_message(message["role"], avatar="images/23260507.jpg"):
-                        st.markdown(message["content"])
+        input_file_path = func.record_audio()
 
-            # 音声入力をテキストに変換
-            result = func.transcribe(st.session_state.chat_input_file_path, st.session_state.client)
-            st.session_state.messages.append({"role": "user", "content": result.text})
-            with st.chat_message("user", avatar="images/23260507.jpg"):
-                st.markdown(result.text)
-
-            result = st.session_state.chain.predict(input=result.text)
-            st.session_state.messages.append({"role": "assistant", "content": result})
-            with st.chat_message("assistant", avatar="images/370377.jpg"):
-                st.markdown(result)
-
-            # LLMからの回答を音声データに変換
-            response = st.session_state.client.audio.speech.create(
-                model="tts-1",
-                voice="alloy",
-                input=result
-            )
-
-            # mp3形式の音声ファイルをwav形式に変換して保存
-            output_file_path = Path.cwd() / "audio/output" / f"recorded_audio_output_{int(time.time())}.wav"
-            func.save_to_wav(response.content, output_file_path)
-
-            # 音声ファイルの読み上げ
-            func.play_wav(str(output_file_path), speed=st.session_state.speed)
-
-            if st.session_state.chat_count>1:
-                st.session_state.chat_input_file_path = func.record_audio()
+        for message in st.session_state.messages:
+            if message["role"] == "assistant":
+                with st.chat_message(message["role"], avatar="images/370377.jpg"):
+                    st.markdown(message["content"])
             else:
-                st.rerun()
+                with st.chat_message(message["role"], avatar="images/23260507.jpg"):
+                    st.markdown(message["content"])
+
+        # 音声入力をテキストに変換
+        result = func.transcribe(input_file_path, st.session_state.client)
+        st.session_state.messages.append({"role": "user", "content": result.text})
+        with st.chat_message("user", avatar="images/23260507.jpg"):
+            st.markdown(result.text)
+
+        result = st.session_state.chain.predict(input=result.text)
+        st.session_state.messages.append({"role": "assistant", "content": result})
+        with st.chat_message("assistant", avatar="images/370377.jpg"):
+            st.markdown(result)
+
+        # LLMからの回答を音声データに変換
+        response = st.session_state.client.audio.speech.create(
+            model="tts-1",
+            voice="alloy",
+            input=result
+        )
+
+        # mp3形式の音声ファイルをwav形式に変換して保存
+        output_file_path = Path.cwd() / "audio/output" / f"recorded_audio_output_{int(time.time())}.wav"
+        func.save_to_wav(response.content, output_file_path)
+
+        # 音声ファイルの読み上げ
+        func.play_wav(str(output_file_path), speed=st.session_state.speed)
+        
