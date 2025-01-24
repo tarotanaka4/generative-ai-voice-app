@@ -35,6 +35,7 @@ if "messages" not in st.session_state:
     st.session_state.shadowing_state = False
     st.session_state.mode = "日常英会話"
     st.session_state.pre_mode = "日常英会話"
+    st.session_state.englv = "初級者"
     func.delete_wav_files()
 
     st.session_state.client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
@@ -60,7 +61,7 @@ if "messages" not in st.session_state:
         memory=memory
     )
 
-col1, col2, col3, col4 = st.columns([1, 1, 1, 2])
+col1, col2, col3, col4, col5 = st.columns([2, 2, 2, 2, 2])
 with col1:
     if st.session_state.start_flg:
         st.button("英会話開始")
@@ -76,6 +77,8 @@ with col3:
 with col4:
     st.session_state.pre_mode = st.session_state.mode
     st.session_state.mode = st.selectbox(label="モード", options=["日常英会話", "シャドーイング", "ディクテーション"], label_visibility="collapsed")
+with col5:
+    st.session_state.englv = st.selectbox(label="英語レベル", options=["初級者","中級者"], label_visibility="collapsed")
 
 with st.chat_message("assistant", avatar="images/370377.jpg"):
     st.success("こちらは生成AIによる音声英会話の練習アプリです。何度も繰り返し練習して、英語力をアップさせましょう。")
@@ -139,23 +142,30 @@ if st.session_state.start_flg:
     if st.session_state.mode == "ディクテーション" and (st.session_state.dictation_button_flg or st.session_state.dictation_count == 0 or chat_message):
         if not chat_message:
             with st.spinner('問題文生成中...'):
-                system_template = """
-                Generate 1 sentence that reflect natural English used in daily conversations, workplace, and social settings:
-                - Casual conversational expressions
-                - Polite business language
-                - Friendly phrases used among friends
-                - Sentences with situational nuances and emotions
-                - Expressions reflecting cultural and regional contexts
+                if st.session_state.englv == "初級者":
+                    system_template = """
+                    Generate 1 simple sentence used in everyday English conversations:
+                    Limit your response to an English sentence of approximately 10 words.
+                    # Make sentence 3-10 words long with clear and understandable context.
+                    """
+                else:
+                    system_template = """
+                    Generate 1 sentence that reflect natural English used in daily conversations, workplace, and social settings:
+                    - Casual conversational expressions
+                    - Polite business language
+                    - Friendly phrases used among friends
+                    - Sentences with situational nuances and emotions
+                    - Expressions reflecting cultural and regional contexts
 
-                Limit your response to an English sentence of approximately 15 words.
-                # Make each sentence 10-15 words long with clear and understandable context.
-                """
+                    Limit your response to an English sentence of approximately 15 words.
+                    # Make each sentence 10-15 words long with clear and understandable context.
+                    """
                 prompt = ChatPromptTemplate.from_messages([
                     SystemMessage(content=system_template),
                     MessagesPlaceholder(variable_name="history"),
                     HumanMessagePromptTemplate.from_template("{input}")
                 ])
-                llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0.5)
+                llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=1.0)
                 memory = ConversationSummaryBufferMemory(
                     llm=llm,
                     max_token_limit=500,
@@ -250,22 +260,28 @@ if st.session_state.start_flg:
             st.rerun()
 
     if st.session_state.mode == "シャドーイング":
-        system_template = """
-        Generate 1 sentence that reflect natural English used in daily conversations, workplace, and social settings:
-        - Casual conversational expressions
-        - Polite business language
-        - Friendly phrases used among friends
-        - Sentences with situational nuances and emotions
-        - Expressions reflecting cultural and regional contexts
+        if st.session_state.englv == "初級者":
+            system_template = """ 
+            Generate 1 sentence that reflect natural English used in daily conversations and social settings:
+            Make each sentence 3-8 words long with clear and understandable context.
+            """
+        else:
+            system_template = """
+            Generate 1 sentence that reflect natural English used in daily conversations, workplace, and social settings:
+            - Casual conversational expressions
+            - Polite business language
+            - Friendly phrases used among friends
+            - Sentences with situational nuances and emotions
+            - Expressions reflecting cultural and regional contexts
 
-        Make each sentence 20-30 words long with clear and understandable context.
-        """
+            Make each sentence 20-30 words long with clear and understandable context.
+            """
         prompt = ChatPromptTemplate.from_messages([
             SystemMessage(content=system_template),
             MessagesPlaceholder(variable_name="history"),
             HumanMessagePromptTemplate.from_template("{input}")
         ])
-        llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=0.5)
+        llm = ChatOpenAI(model_name="gpt-4o-mini", temperature=1.0)
         memory = ConversationSummaryBufferMemory(
             llm=llm,
             max_token_limit=500,
