@@ -89,13 +89,6 @@ with st.chat_message("assistant", avatar="images/370377.jpg"):
 
 if st.session_state.mode == "シャドーイング":
     if st.session_state.shadowing_flg:
-        for message in st.session_state.messages:
-            if message["role"] == "assistant":
-                with st.chat_message(message["role"], avatar="images/370377.jpg"):
-                    st.markdown(message["content"])
-            else:
-                with st.chat_message(message["role"], avatar="images/23260507.jpg"):
-                    st.markdown(message["content"])
         if not st.session_state.shadowing_continue_flg and not st.session_state.shadowing_state:
             st.stop()
 if st.session_state.mode == "ディクテーション":
