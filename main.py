@@ -25,13 +25,9 @@ if "messages" not in st.session_state:
     st.session_state.end_flg = False
     st.session_state.shadowing_flg = False
     st.session_state.shadowing_continue_flg = False
-    st.session_state.shadowing_count = 0
-    st.session_state.dictation_flg = False
     st.session_state.dictation_button_flg = False
     st.session_state.dictation_count = 0
     st.session_state.chat_wait_flg = False
-    st.session_state.chat_count = 0
-    st.session_state.chat_input_file_path = ""
     st.session_state.shadowing_state = False
     st.session_state.mode = "日常英会話"
     st.session_state.pre_mode = "日常英会話"
@@ -121,13 +117,10 @@ if st.session_state.end_flg or (st.session_state.pre_mode != st.session_state.mo
     st.session_state.end_flg = False
     st.session_state.shadowing_flg = False
     st.session_state.shadowing_continue_flg = False
-    st.session_state.shadowing_count = 0
     st.session_state.dictation_flg = False
     st.session_state.dictation_button_flg = False
     st.session_state.dictation_count = 0
     st.session_state.chat_wait_flg = False
-    st.session_state.chat_count = 0
-    st.session_state.chat_input_file_path = ""
     st.session_state.shadowing_state = False
 
 if st.session_state.chat_wait_flg:
@@ -375,7 +368,6 @@ if st.session_state.start_flg:
                 st.markdown(result)
             
             st.session_state.shadowing_flg = True
-            st.session_state.shadowing_count += 1
             st.session_state.messages = []
             st.session_state.shadowing_continue_flg = True
             st.button("シャドーイングを開始")
